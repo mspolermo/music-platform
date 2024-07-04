@@ -2,7 +2,6 @@ import { Grid, IconButton } from "@material-ui/core";
 import { Pause, PlayArrow, VolumeUp } from "@material-ui/icons";
 import React, { useEffect } from "react";
 import styles from '../styles/Player.module.scss'
-import { ITrack } from "../types/track";
 import TrackProgress from "./TrackProgress";
 import { useTypedSelector } from "../hooks/useTypedSelector";
 import { useActions } from "../hooks/useActions";
@@ -11,10 +10,9 @@ let audio;
 
 const Player = () => {
     const { pause, volume, active, duration, currentTime } = useTypedSelector(state => state.player);
-    const { pauseTrack, playTrack, setVolume, setCurrentTime, setDuration, setActiveTrack } = useActions();
+    const { pauseTrack, playTrack, setVolume, setCurrentTime, setDuration } = useActions();
 
     useEffect(() => {
-        console.log(active)
         if (!audio) {
             audio = new Audio();
         }
@@ -23,7 +21,23 @@ const Player = () => {
             playTrack();
             audio.play();
         }
+        if (!active) {
+            audio.pause();
+        }
     }, [active])
+
+    useEffect(() => {
+        if (audio.duration) {
+            setDuration(Math.ceil(audio.duration))
+            setCurrentTime(Math.ceil(audio.currentTime))
+        }
+
+        if(pause) {
+            audio.pause();
+        } else {
+            audio.play();
+        }
+    }, [pause])
 
     const setAudio = () => {
         if (active) {
@@ -76,7 +90,7 @@ const Player = () => {
             </Grid>
             <TrackProgress left={currentTime} right={duration}  onChange={changeCurrentTime}/>
             <VolumeUp style={{marginLeft: 'auto'}} />
-            <TrackProgress left={volume} right={100}  onChange={changeVolume}/>
+            <TrackProgress left={volume} right={100}  onChange={changeVolume} volume={true}/>
         </div>
     )
 }

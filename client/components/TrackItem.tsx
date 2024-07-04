@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {ITrack} from "../types/track";
 import {Card, Grid, IconButton} from "@material-ui/core";
 import styles from '../styles/TrackItem.module.scss'
@@ -7,20 +7,37 @@ import {useRouter} from "next/router";
 import { useActions } from '../hooks/useActions';
 import axios from 'axios';
 import { useTypedSelector } from '../hooks/useTypedSelector';
+import useTimeFormat from '../hooks/useTimeFormat';
 
 interface TrackItemProps {
     track: ITrack;
     active?: boolean;
+    currentTime: number;
+    duration: number;
 }
 
-const TrackItem: React.FC<TrackItemProps> = ({track, active = false}) => {
+const TrackItem: React.FC<TrackItemProps> = ({track, active = false, currentTime, duration}) => {
     const router = useRouter();
     const { playTrack, pauseTrack, setActiveTrack } = useActions();
+    const [isPlayed, setIsPlayed] = useState(false);
 
-    const play = (e) => {
+    useEffect(() => {
+        if (!active) {
+            setIsPlayed(false)
+        }
+    }, [active])
+
+    const playFunc = (e) => {
         e.stopPropagation();
+        setIsPlayed(true);
         setActiveTrack(track);
         playTrack();
+    }
+
+    const pauseFunc = (e) => {
+        e.stopPropagation();
+        setIsPlayed(false)
+        pauseTrack();
     }
 
     const deleteTrack = async (e) => {
@@ -32,8 +49,8 @@ const TrackItem: React.FC<TrackItemProps> = ({track, active = false}) => {
 
     return (
         <Card className={styles.track} onClick={() => router.push('/tracks/' + track._id)}>
-            <IconButton onClick={play}>
-                {active
+            <IconButton onClick={!isPlayed ? playFunc : pauseFunc}>
+                {(isPlayed && active)
                     ? <Pause/>
                     : <PlayArrow/>
                 }
@@ -43,7 +60,7 @@ const TrackItem: React.FC<TrackItemProps> = ({track, active = false}) => {
                 <div>{track.name}</div>
                 <div style={{fontSize: 12, color: 'gray'}}>{track.artist}</div>
             </Grid>
-            {active && <div>02:42 / 03:22</div>}
+            {active && <div>{useTimeFormat(currentTime)}/ {useTimeFormat(duration)}</div>}
             <IconButton onClick={deleteTrack} style={{marginLeft: 'auto'}}>
                 <Delete/>
             </IconButton>

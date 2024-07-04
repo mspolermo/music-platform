@@ -1,9 +1,15 @@
 import { Button } from "@material-ui/core";
-import React from "react";
+import React, { useEffect } from "react";
 import Navbar from "../components/Navbar";
 import MainLayout from "../layouts/MainLayout";
+import { useActions } from "../hooks/useActions";
 
 const Index = () => {
+    const { setActiveTrack } = useActions();
+
+    useEffect(() => {
+        setActiveTrack(null);
+    }, [])
     return (
         <>
         <MainLayout>
